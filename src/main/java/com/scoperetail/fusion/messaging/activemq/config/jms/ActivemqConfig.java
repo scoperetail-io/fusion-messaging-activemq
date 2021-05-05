@@ -2,7 +2,6 @@ package com.scoperetail.fusion.messaging.activemq.config.jms;
 
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -16,7 +15,6 @@ import javax.jms.ConnectionFactory;
 import org.apache.activemq.ActiveMQConnectionFactory;
 import org.apache.activemq.broker.BrokerService;
 import org.apache.activemq.broker.TransportConnector;
-import org.apache.activemq.command.ActiveMQQueue;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.config.AutowireCapableBeanFactory;
 import org.springframework.beans.factory.support.BeanDefinitionBuilder;
@@ -31,13 +29,10 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.jms.config.DefaultJmsListenerContainerFactory;
 import org.springframework.jms.connection.CachingConnectionFactory;
 import org.springframework.jms.core.JmsTemplate;
-import org.springframework.jms.listener.DefaultMessageListenerContainer;
 
 import com.scoperetail.fusion.messaging.adapter.JmsProvider;
-import com.scoperetail.fusion.messaging.adapter.out.messaging.jms.MessageRouter;
+import com.scoperetail.fusion.messaging.adapter.out.messaging.jms.MessageRouterSender;
 import com.scoperetail.fusion.messaging.config.Adapter;
-import com.scoperetail.fusion.messaging.config.Adapter.AdapterType;
-import com.scoperetail.fusion.messaging.config.Adapter.Type;
 import com.scoperetail.fusion.messaging.config.Broker;
 import com.scoperetail.fusion.messaging.config.Config;
 import com.scoperetail.fusion.messaging.config.FusionConfig;
@@ -51,7 +46,8 @@ public class ActivemqConfig implements InitializingBean {
 
 	private FusionConfig fusion;
 	private ApplicationContext applicationContext;
-	private MessageRouter messageRouter;
+	private MessageRouterSender messageRouter;
+	private Map<String, CachingConnectionFactory> connectionFactoryByBrokerIdMap = new HashMap<>(1);
 
 	@Override
 	public void afterPropertiesSet() throws Exception {
@@ -64,64 +60,53 @@ public class ActivemqConfig implements InitializingBean {
 				.collect(Collectors.toList());
 		AutowireCapableBeanFactory factory = applicationContext.getAutowireCapableBeanFactory();
 		BeanDefinitionRegistry registry = (BeanDefinitionRegistry) factory;
-		final Map<String, ConnectionFactory> connectionFactoryByBrokerIdMap = new HashMap<>();
 		brokers.forEach(broker -> {
-			// registerBroker(broker, registry);
-			ConnectionFactory connectionFactory = registerConnectionFactory(broker, registry);
+			CachingConnectionFactory connectionFactory = registerConnectionFactory(broker, registry);
 			connectionFactoryByBrokerIdMap.put(broker.getBrokerId() + "_CustomFactory", connectionFactory);
+		});
+//		final Map<String, List<String>> map = new HashMap<>();
+//		fusion.getUsecases().forEach(usecase -> {
+//			String activeConfig = usecase.getActiveConfig();
+//			List<Config> configs = usecase.getConfigs();
+//			Optional<Config> optConfig = configs.stream().filter(c -> activeConfig.equals(c.getName())).findFirst();
+//			optConfig.ifPresent(config -> {
+//				List<Adapter> adapters = config.getAdapters().stream()
+//						.filter(a -> AdapterType.INBOUND.equals(a.getAdapterType()) && Type.JMS.equals(a.getType()))
+//						.collect(Collectors.toList());
+//				adapters.forEach(adapter -> {
+//					String brokerId = adapter.getBrokerId();
+//					if (!map.containsKey(brokerId)) {
+//						ArrayList<String> queueNames = new ArrayList<>();
+//						queueNames.add(adapter.getQueueName());
+//						map.put(brokerId, queueNames);
+//					} else {
+//						map.get(brokerId).add(adapter.getQueueName());
+//					}
+//				});
+//			});
+//		});
 
-//			DefaultJmsListenerContainerFactory defaultJmsListenerContainerFactory = registerDefaultJmsListenerContainerFactory(
-//					broker, registry);
-
-//			DefaultJmsListenerContainerFactoryConfigurer defaultJmsListenerContainerFactoryConfigurer = registerListenerContainerFactoryConfigurer(
-//					registry, broker);
+//		map.entrySet().forEach(entry -> {
+//			String brokerId = entry.getKey();
+//			List<String> queues = entry.getValue();
+//			queues.forEach(queue -> {
+////				final DefaultMessageListenerContainer dmlc = new DefaultMessageListenerContainer();
+////				dmlc.setConnectionFactory(connectionFactoryByBrokerIdMap.get(brokerId + "_CustomFactory"));
+////				dmlc.setMessageListener(messageRouter);
+////				ActiveMQQueue activeMqQueue = new ActiveMQQueue();
+////				activeMqQueue.setPhysicalName(queue);
+////				dmlc.setDestination(activeMqQueue);
+////				dmlc.setCacheLevelName("CACHE_CONSUMER");
+////				dmlc.setConcurrency("5-10");
+////
+////				dmlc.setAutoStartup(true);
+////				dmlc.setSessionTransacted(false);
+////				// start calls initialize
+////				dmlc.afterPropertiesSet();
+////				dmlc.start();
+//			});
 //
-//			defaultJmsListenerContainerFactoryConfigurer.configure(defaultJmsListenerContainerFactory,
-//					connectionFactory);
-		});
-		final Map<String, List<String>> map = new HashMap<>();
-		fusion.getUsecases().forEach(usecase -> {
-			String activeConfig = usecase.getActiveConfig();
-			List<Config> configs = usecase.getConfigs();
-			Optional<Config> optConfig = configs.stream().filter(c -> activeConfig.equals(c.getName())).findFirst();
-			optConfig.ifPresent(config -> {
-				List<Adapter> adapters = config.getAdapters().stream()
-						.filter(a -> AdapterType.INBOUND.equals(a.getAdapterType()) && Type.JMS.equals(a.getType()))
-						.collect(Collectors.toList());
-				adapters.forEach(adapter -> {
-					String brokerId = adapter.getBrokerId();
-					if (!map.containsKey(brokerId)) {
-						ArrayList<String> queueNames = new ArrayList<>();
-						queueNames.add(adapter.getQueueName());
-						map.put(brokerId, queueNames);
-					} else {
-						map.get(brokerId).add(adapter.getQueueName());
-					}
-				});
-			});
-		});
-
-		map.entrySet().forEach(entry -> {
-			String brokerId = entry.getKey();
-			List<String> queues = entry.getValue();
-			queues.forEach(queue -> {
-				final DefaultMessageListenerContainer dmlc = new DefaultMessageListenerContainer();
-				dmlc.setConnectionFactory(connectionFactoryByBrokerIdMap.get(brokerId + "_CustomFactory"));
-				dmlc.setMessageListener(new JmsMessageListener());
-				ActiveMQQueue activeMqQueue = new ActiveMQQueue();
-				activeMqQueue.setPhysicalName(queue);
-				dmlc.setDestination(activeMqQueue);
-				dmlc.setCacheLevelName("CACHE_CONSUMER");
-				dmlc.setConcurrency("5-10");
-
-				dmlc.setAutoStartup(true);
-				dmlc.setSessionTransacted(false);
-				// start calls initialize
-				dmlc.afterPropertiesSet();
-				dmlc.start();
-			});
-
-		});
+//		});
 		System.out.println("JAI GANESH");
 	}
 
@@ -172,7 +157,7 @@ public class ActivemqConfig implements InitializingBean {
 		registry.registerBeanDefinition(beanName, brokerServiceBeanDefinitionBuilder.getBeanDefinition());
 	}
 
-	private ConnectionFactory registerConnectionFactory(Broker broker, BeanDefinitionRegistry registry) {
+	private CachingConnectionFactory registerConnectionFactory(Broker broker, BeanDefinitionRegistry registry) {
 		ActiveMQConnectionFactory activeMQConnectionFactory = new ActiveMQConnectionFactory();
 		activeMQConnectionFactory.setBrokerURL(broker.getHostUrl());
 		BeanDefinitionBuilder factoryBeanDefinitionBuilder = BeanDefinitionBuilder
@@ -181,7 +166,7 @@ public class ActivemqConfig implements InitializingBean {
 				.addPropertyValue("sessionCacheSize", broker.getSendSessionCacheSize());
 		String factoryName = broker.getBrokerId() + "_CustomFactory";
 		registry.registerBeanDefinition(factoryName, factoryBeanDefinitionBuilder.getBeanDefinition());
-		return (ConnectionFactory) applicationContext.getBean(factoryName);
+		return (CachingConnectionFactory) applicationContext.getBean(factoryName);
 	}
 
 	private void initializeMessageSender() {
@@ -212,8 +197,7 @@ public class ActivemqConfig implements InitializingBean {
 //					String factoryName = brokerId + "_CustomFactory";
 //					registry.registerBeanDefinition(factoryName, factoryBeanDefinitionBuilder.getBeanDefinition());
 					String factoryName = brokerId + "_CustomFactory";
-					CachingConnectionFactory connectionFactory = (CachingConnectionFactory) applicationContext
-							.getBean(factoryName);
+					CachingConnectionFactory connectionFactory = connectionFactoryByBrokerIdMap.get(factoryName);
 
 					BeanDefinitionBuilder templateBeanDefinitionBuilder = BeanDefinitionBuilder
 							.rootBeanDefinition(JmsTemplate.class)
@@ -228,5 +212,9 @@ public class ActivemqConfig implements InitializingBean {
 				});
 			});
 		});
+	}
+
+	public ConnectionFactory getConnectionFactory(String brokerId) {
+		return connectionFactoryByBrokerIdMap.get(brokerId + "_CustomFactory");
 	}
 }
