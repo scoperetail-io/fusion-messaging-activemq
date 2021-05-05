@@ -19,11 +19,11 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.jms.connection.CachingConnectionFactory;
 import org.springframework.jms.core.JmsTemplate;
 
-import com.scoperetail.fusion.messaging.activemq.config.app.Adapter;
-import com.scoperetail.fusion.messaging.activemq.config.app.Broker;
-import com.scoperetail.fusion.messaging.activemq.config.app.Config;
-import com.scoperetail.fusion.messaging.activemq.config.app.Fusion;
 import com.scoperetail.fusion.messaging.adapter.out.messaging.jms.MessageRouter;
+import com.scoperetail.fusion.messaging.config.Adapter;
+import com.scoperetail.fusion.messaging.config.Broker;
+import com.scoperetail.fusion.messaging.config.Config;
+import com.scoperetail.fusion.messaging.config.FusionConfig;
 
 import lombok.AllArgsConstructor;
 
@@ -32,7 +32,7 @@ import lombok.AllArgsConstructor;
 @EnableAutoConfiguration(exclude = { JmsAutoConfiguration.class, ActiveMQAutoConfiguration.class })
 public class ActivemqConfig implements InitializingBean {
 
-	private Fusion fusion;
+	private FusionConfig fusion;
 	private ApplicationContext applicationContext;
 	private MessageRouter messageRouter;
 
