@@ -1,32 +1,25 @@
 package com.scoperetail.fusion.messaging.activemq.config.jms;
 
-import java.net.URI;
-import java.net.URISyntaxException;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
-import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.stream.Collectors;
 
 import javax.jms.ConnectionFactory;
 
 import org.apache.activemq.ActiveMQConnectionFactory;
-import org.apache.activemq.broker.BrokerService;
-import org.apache.activemq.broker.TransportConnector;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.config.AutowireCapableBeanFactory;
 import org.springframework.beans.factory.support.BeanDefinitionBuilder;
 import org.springframework.beans.factory.support.BeanDefinitionRegistry;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
-import org.springframework.boot.autoconfigure.jms.DefaultJmsListenerContainerFactoryConfigurer;
 import org.springframework.boot.autoconfigure.jms.JmsAutoConfiguration;
-import org.springframework.boot.autoconfigure.jms.JmsProperties;
 import org.springframework.boot.autoconfigure.jms.activemq.ActiveMQAutoConfiguration;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.jms.config.DefaultJmsListenerContainerFactory;
 import org.springframework.jms.connection.CachingConnectionFactory;
 import org.springframework.jms.core.JmsTemplate;
 
@@ -63,98 +56,10 @@ public class ActivemqConfig implements InitializingBean {
 		brokers.forEach(broker -> {
 			CachingConnectionFactory connectionFactory = registerConnectionFactory(broker, registry);
 			connectionFactoryByBrokerIdMap.put(broker.getBrokerId() + "_CustomFactory", connectionFactory);
+			System.out.println(broker.getBrokerId() + "_CustomFactory" + " factory is registered");
+
 		});
-//		final Map<String, List<String>> map = new HashMap<>();
-//		fusion.getUsecases().forEach(usecase -> {
-//			String activeConfig = usecase.getActiveConfig();
-//			List<Config> configs = usecase.getConfigs();
-//			Optional<Config> optConfig = configs.stream().filter(c -> activeConfig.equals(c.getName())).findFirst();
-//			optConfig.ifPresent(config -> {
-//				List<Adapter> adapters = config.getAdapters().stream()
-//						.filter(a -> AdapterType.INBOUND.equals(a.getAdapterType()) && Type.JMS.equals(a.getType()))
-//						.collect(Collectors.toList());
-//				adapters.forEach(adapter -> {
-//					String brokerId = adapter.getBrokerId();
-//					if (!map.containsKey(brokerId)) {
-//						ArrayList<String> queueNames = new ArrayList<>();
-//						queueNames.add(adapter.getQueueName());
-//						map.put(brokerId, queueNames);
-//					} else {
-//						map.get(brokerId).add(adapter.getQueueName());
-//					}
-//				});
-//			});
-//		});
-
-//		map.entrySet().forEach(entry -> {
-//			String brokerId = entry.getKey();
-//			List<String> queues = entry.getValue();
-//			queues.forEach(queue -> {
-////				final DefaultMessageListenerContainer dmlc = new DefaultMessageListenerContainer();
-////				dmlc.setConnectionFactory(connectionFactoryByBrokerIdMap.get(brokerId + "_CustomFactory"));
-////				dmlc.setMessageListener(messageRouter);
-////				ActiveMQQueue activeMqQueue = new ActiveMQQueue();
-////				activeMqQueue.setPhysicalName(queue);
-////				dmlc.setDestination(activeMqQueue);
-////				dmlc.setCacheLevelName("CACHE_CONSUMER");
-////				dmlc.setConcurrency("5-10");
-////
-////				dmlc.setAutoStartup(true);
-////				dmlc.setSessionTransacted(false);
-////				// start calls initialize
-////				dmlc.afterPropertiesSet();
-////				dmlc.start();
-//			});
-//
-//		});
-		System.out.println("JAI GANESH");
-	}
-
-	private DefaultJmsListenerContainerFactory registerDefaultJmsListenerContainerFactory(Broker broker,
-			BeanDefinitionRegistry registry) {
-		BeanDefinitionBuilder jmsListenerContainerFactoryBeanDefinitionBuilder = BeanDefinitionBuilder
-				.rootBeanDefinition(DefaultJmsListenerContainerFactory.class);
-		String factoryBeanName = broker.getBrokerId() + "_DefaultJmsListenerContainerFactory";
-		registry.registerBeanDefinition(factoryBeanName,
-				jmsListenerContainerFactoryBeanDefinitionBuilder.getBeanDefinition());
-		return (DefaultJmsListenerContainerFactory) applicationContext.getBean(factoryBeanName);
-	}
-
-	private DefaultJmsListenerContainerFactoryConfigurer registerListenerContainerFactoryConfigurer(
-			BeanDefinitionRegistry registry, Broker broker) {
-
-		JmsProperties jmsProperties = new JmsProperties();
-		BeanDefinitionBuilder jmsListenerContainerFactoryBeanDefinitionBuilder = BeanDefinitionBuilder
-				.rootBeanDefinition(DefaultJmsListenerContainerFactoryConfigurer.class)
-				.addPropertyValue("jmsProperties", jmsProperties);
-
-		String factoryBeanName = broker.getBrokerId() + "_DefaultJmsListenerContainerFactoryConfigurer";
-		DefaultJmsListenerContainerFactoryConfigurer defaultJmsListenerContainerFactoryConfigurer = new DefaultJmsListenerContainerFactoryConfigurer();
-
-		// return
-		// (DefaultJmsListenerContainerFactoryConfigurer)applicationContext.getAutowireCapableBeanFactory().initializeBean(defaultJmsListenerContainerFactoryConfigurer,
-		// factoryBeanName);
-
-		registry.registerBeanDefinition(factoryBeanName,
-				jmsListenerContainerFactoryBeanDefinitionBuilder.getBeanDefinition());
-		return (DefaultJmsListenerContainerFactoryConfigurer) applicationContext.getBean(factoryBeanName);
-	}
-
-	private void registerBroker(Broker broker, BeanDefinitionRegistry registry) {
-		List<TransportConnector> transportConnectors = new CopyOnWriteArrayList<>();
-		TransportConnector tc = new TransportConnector();
-		try {
-			tc.setUri(new URI(broker.getHostUrl()));
-		} catch (URISyntaxException e) {
-			e.printStackTrace();
-		}
-		transportConnectors.add(tc);
-		String beanName = broker.getBrokerId() + "_BrokerService";
-		BeanDefinitionBuilder brokerServiceBeanDefinitionBuilder = BeanDefinitionBuilder
-				.rootBeanDefinition(BrokerService.class).addPropertyValue("transportConnectors", transportConnectors)
-				.addPropertyValue("brokerName", broker.getBrokerId());
-
-		registry.registerBeanDefinition(beanName, brokerServiceBeanDefinitionBuilder.getBeanDefinition());
+		System.out.println("initializeMessageReceiver completed");
 	}
 
 	private CachingConnectionFactory registerConnectionFactory(Broker broker, BeanDefinitionRegistry registry) {
@@ -170,6 +75,7 @@ public class ActivemqConfig implements InitializingBean {
 	}
 
 	private void initializeMessageSender() {
+		Set<String> uniqueBrokerIds = new HashSet<>();
 		fusion.getUsecases().forEach(usecase -> {
 			String activeConfig = usecase.getActiveConfig();
 			List<Config> configs = usecase.getConfigs();
@@ -179,39 +85,27 @@ public class ActivemqConfig implements InitializingBean {
 						.filter(c -> c.getAdapterType().equals(Adapter.AdapterType.OUTBOUND)
 								&& c.getType().equals(Adapter.Type.JMS))
 						.collect(Collectors.toList());
+				uniqueBrokerIds.addAll(adapters.stream().map(Adapter::getBrokerId).collect(Collectors.toSet()));
 
-				Set<String> brokerIds = adapters.stream().map(Adapter::getBrokerId).collect(Collectors.toSet());
-				final Map<String, Broker> allBrokersMap = fusion.getBrokers().stream()
-						.collect(Collectors.toMap(Broker::getBrokerId, broker -> broker));
-				brokerIds.forEach(brokerId -> {
-					Broker broker = allBrokersMap.get(brokerId);
-//					ActiveMQConnectionFactory activeMQConnectionFactory = new ActiveMQConnectionFactory();
-//					activeMQConnectionFactory.setBrokerURL(broker.getHostUrl());
-//					BeanDefinitionBuilder factoryBeanDefinitionBuilder = BeanDefinitionBuilder
-//							.rootBeanDefinition(CachingConnectionFactory.class)
-//							.addPropertyValue("targetConnectionFactory", activeMQConnectionFactory)
-//							.addPropertyValue("sessionCacheSize", broker.getSendSessionCacheSize());
-//
-//					AutowireCapableBeanFactory factory = applicationContext.getAutowireCapableBeanFactory();
-//					BeanDefinitionRegistry registry = (BeanDefinitionRegistry) factory;
-//					String factoryName = brokerId + "_CustomFactory";
-//					registry.registerBeanDefinition(factoryName, factoryBeanDefinitionBuilder.getBeanDefinition());
-					String factoryName = brokerId + "_CustomFactory";
-					CachingConnectionFactory connectionFactory = connectionFactoryByBrokerIdMap.get(factoryName);
-
-					BeanDefinitionBuilder templateBeanDefinitionBuilder = BeanDefinitionBuilder
-							.rootBeanDefinition(JmsTemplate.class)
-							.addPropertyValue("connectionFactory", connectionFactory);
-
-					AutowireCapableBeanFactory factory = applicationContext.getAutowireCapableBeanFactory();
-					BeanDefinitionRegistry registry = (BeanDefinitionRegistry) factory;
-					registry.registerBeanDefinition(brokerId, templateBeanDefinitionBuilder.getBeanDefinition());
-
-					JmsTemplate jmsTemplate = (JmsTemplate) applicationContext.getBean(brokerId);
-					messageRouter.registerTemplate(brokerId, jmsTemplate);
-				});
 			});
 		});
+		uniqueBrokerIds.forEach(brokerId -> {
+			String factoryName = brokerId + "_CustomFactory";
+			CachingConnectionFactory connectionFactory = connectionFactoryByBrokerIdMap.get(factoryName);
+
+			BeanDefinitionBuilder templateBeanDefinitionBuilder = BeanDefinitionBuilder
+					.rootBeanDefinition(JmsTemplate.class).addPropertyValue("connectionFactory", connectionFactory);
+
+			AutowireCapableBeanFactory factory = applicationContext.getAutowireCapableBeanFactory();
+			BeanDefinitionRegistry registry = (BeanDefinitionRegistry) factory;
+			registry.registerBeanDefinition(brokerId, templateBeanDefinitionBuilder.getBeanDefinition());
+
+			JmsTemplate jmsTemplate = (JmsTemplate) applicationContext.getBean(brokerId);
+			messageRouter.registerTemplate(brokerId, jmsTemplate);
+		});
+
+		System.out.println("initializeMessageSender completed");
+
 	}
 
 	public ConnectionFactory getConnectionFactory(String brokerId) {
