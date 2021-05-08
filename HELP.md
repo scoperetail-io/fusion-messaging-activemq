@@ -12,4 +12,3 @@ For further reference, please consider the following sections:
 The following guides illustrate how to use some features concretely:
 
 * [Java Message Service API via Apache ActiveMQ Classic.](https://spring.io/guides/gs/messaging-jms/)
-

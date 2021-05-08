@@ -1,4 +1,5 @@
-package com.scoperetail.fusion.messaging.activemq.impl;
+/* ScopeRetail (C)2021 */
+package com.scoperetail.fusion.messaging.activemq;
 
 import javax.jms.ConnectionFactory;
 import javax.jms.Queue;
@@ -18,15 +19,14 @@ public class RouterActiveMQHelper implements RouterHelper {
 	ActivemqConfig activemqConfig;
 
 	@Override
-	public ConnectionFactory getConnectionFactory(String brokerId) {
+	public ConnectionFactory getConnectionFactory(final String brokerId) {
 		return activemqConfig.getConnectionFactory(brokerId);
 	}
 
 	@Override
-	public Queue getQueue(String queueName) {
-		ActiveMQQueue queue = new ActiveMQQueue();
+	public Queue getQueue(final String queueName) {
+		final ActiveMQQueue queue = new ActiveMQQueue();
 		queue.setPhysicalName(queueName);
 		return queue;
 	}
-
 }
