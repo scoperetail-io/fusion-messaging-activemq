@@ -1,0 +1,74 @@
+# Java Maven CircleCI 2.0 configuration file
+#
+# Check https://circleci.com/docs/2.0/language-java/ for more details
+
+jobs:
+  build:
+    docker:
+      # specify the version you desire here
+      - image: circleci/openjdk:11-jdk
+
+      # Specify service dependencies here if necessary
+      # CircleCI maintains a library of pre-built images
+      # documented at https://circleci.com/docs/2.0/circleci-images/
+      # - image: circleci/postgres:9.4
+
+    working_directory: ~/repo
+
+    environment:
+      # Customize the JVM maximum heap limit
+      MAVEN_OPTS: -Xmx3200m
+
+
+    steps:
+      - checkout
+
+      #Review if the comment has valid ticket
+      # Download and cache dependencies (Test and Sonar Scan)
+      - restore_cache:
+          keys:
+            - v1-dependencies-{{ checksum "pom.xml" }}
+            # fallback to using the latest cache if no exact match is found
+            - v1-dependencies-
+
+      - run:
+          name: Test and Sonar Scan
+          command: |
+            if [[ -z "$RELEASE" && "${CIRCLE_BRANCH}" != "master" ]]; then
+              mvn clean package sonar:sonar -s .circleci/.circleci.settings.xml
+            fi
+      # Deploy!
+      - run:
+          name: Deploy SNAPSHOT
+          command:  |
+            if [[ -z "$RELEASE" && "${CIRCLE_BRANCH}" != "master" ]]; then
+              mvn -s .circleci/.circleci.settings.xml -DskipTests deploy
+            fi
+
+      #Maven Release
+      - run:
+          name: Perform Maven Release
+          command:  |
+            if [[ "$CIRCLE_BRANCH" = "master" ]]
+            then
+                    git config --global user.email "tushar.agrawal@scoperetail.com"
+                    git config --global user.name "scoperetail"
+                    RELEASE="Yes"
+                    ADDITIONAL_PARAMS="--set-upstream origin $CIRCLE_BRANCH"
+                    mvn -s .circleci/.circleci.settings.xml -Darguments="-DskipTests" -B release:prepare -Dmaven.test.skip=true
+
+                    mvn -s .circleci/.circleci.settings.xml -Darguments="-DskipTests" -B release:perform -Dmaven.test.skip=true
+            fi
+      #Save Cache
+      - save_cache:
+          paths:
+            - ~/.m2
+          key: v1-dependencies-{{ checksum "pom.xml" }}
+
+workflows:
+  version: 2
+  build_in_server:
+    jobs:
+      - build
+          
+          
