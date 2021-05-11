@@ -1,0 +1,15 @@
+<settings xmlns="http://maven.apache.org/SETTINGS/1.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+          xsi:schemaLocation="http://maven.apache.org/SETTINGS/1.0.0 http://maven.apache.org/xsd/settings-1.0.0.xsd">
+    <servers>
+        <server>
+            <username>scopeoms</username>
+            <password>AP8iX24e9CrGGeZqmU83hFfkkDz</password>
+            <id>central</id>
+        </server>
+        <server>
+            <username>scopeoms</username>
+            <password>AP8iX24e9CrGGeZqmU83hFfkkDz</password>
+            <id>snapshots</id>
+        </server>
+    </servers>
+</settings>

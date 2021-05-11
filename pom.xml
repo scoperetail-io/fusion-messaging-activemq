@@ -4,20 +4,39 @@
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>com.scoperetail.fusion</groupId>
-	<artifactId>messaging-activemq</artifactId>
-	<version>0.0.1-SNAPSHOT</version>
-	<name>messaging-activemq</name>
+	<artifactId>fusion-messaging-activemq</artifactId>
+	<version>0.1-SNAPSHOT</version>
+	<name>fusion-messaging-activemq</name>
 	<description>Generic Messaging implementation</description>
+
 	<properties>
 		<java.version>1.11</java.version>
 		<lombok.version>1.18.12</lombok.version>
 		<spotless.version>2.10.0</spotless.version>
+		<springfox-version>3.0.0</springfox-version>
+		<sonar.host.url>http://dev-ops.eastus2.cloudapp.azure.com/sonar/</sonar.host.url>
+		<sonar.login>scoperetail</sonar.login>
+		<sonar.password>scope2020!</sonar.password>
+		<sonar.exclusions>
+			com/**/**Test**.java
+		</sonar.exclusions>
+		<sonar.core.codeCoveragePlugin>jacoco</sonar.core.codeCoveragePlugin>
+		<sonar.jacoco.reportPath>${project.basedir}/target/jacoco.exec</sonar.jacoco.reportPath>
+		<sonar.language>java</sonar.language>
 	</properties>
+
+	<scm>
+		<developerConnection>
+			scm:git:git@github.com:scoperetail-io/fusion-messaging-activemq.git
+		</developerConnection>
+		<tag>HEAD</tag>
+	</scm>
+
 	<dependencies>
 		<dependency>
 			<groupId>com.scoperetail.fusion</groupId>
-			<artifactId>messaging</artifactId>
-			<version>0.0.1-SNAPSHOT</version>
+			<artifactId>fusion-messaging</artifactId>
+			<version>0.1</version>
 		</dependency>
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
@@ -95,7 +114,72 @@
 					</java>
 				</configuration>
 			</plugin>
+
+			<plugin>
+				<groupId>org.jacoco</groupId>
+				<artifactId>jacoco-maven-plugin</artifactId>
+				<version>0.8.2</version>
+				<executions>
+					<execution>
+						<goals>
+							<goal>prepare-agent</goal>
+						</goals>
+					</execution>
+					<execution>
+						<id>report</id>
+						<phase>prepare-package</phase>
+						<goals>
+							<goal>report</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
+
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-release-plugin</artifactId>
+				<version>2.5.3</version>
+				<configuration>
+					<scmCommentPrefix>[skip ci]</scmCommentPrefix>
+				</configuration>
+			</plugin>
 		</plugins>
 	</build>
 
+	<distributionManagement>
+		<repository>
+			<id>central</id>
+			<name>scope-artifactory-releases</name>
+			<url>http://scopeartifactory.centralus.cloudapp.azure.com/artifactory/maven-release</url>
+		</repository>
+		<snapshotRepository>
+			<id>snapshots</id>
+			<name>scope-artifactory-snapshots</name>
+			<url>http://scopeartifactory.centralus.cloudapp.azure.com/artifactory/maven-snapshots</url>
+		</snapshotRepository>
+	</distributionManagement>
+
+	<repositories>
+		<repository>
+			<id>spring-milestones</id>
+			<name>Spring Milestones</name>
+			<url>https://repo.spring.io/milestone</url>
+			<snapshots>
+				<enabled>false</enabled>
+			</snapshots>
+		</repository>
+		<repository>
+			<id>central</id>
+			<name>scope-artifactory-virtual</name>
+			<url>http://scopeartifactory.centralus.cloudapp.azure.com/artifactory/maven-virtual</url>
+			<snapshots>
+				<enabled>true</enabled>
+			</snapshots>
+		</repository>
+		<repository>
+			<id>maven-central</id>
+			<name>maven</name>
+			<url>https://repo.maven.apache.org/maven2/</url>
+		</repository>
+	</repositories>
 </project>
