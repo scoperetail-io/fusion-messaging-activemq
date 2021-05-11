@@ -35,8 +35,8 @@
 	<dependencies>
 		<dependency>
 			<groupId>com.scoperetail.fusion</groupId>
-			<artifactId>messaging</artifactId>
-			<version>0.0.1-SNAPSHOT</version>
+			<artifactId>fusion-messaging</artifactId>
+			<version>0.1</version>
 		</dependency>
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
