@@ -2,14 +2,10 @@
           xsi:schemaLocation="http://maven.apache.org/SETTINGS/1.0.0 http://maven.apache.org/xsd/settings-1.0.0.xsd">
     <servers>
         <server>
-            <username>scopeoms</username>
-            <password>AP8iX24e9CrGGeZqmU83hFfkkDz</password>
-            <id>central</id>
-        </server>
-        <server>
-            <username>scopeoms</username>
-            <password>AP8iX24e9CrGGeZqmU83hFfkkDz</password>
-            <id>snapshots</id>
+            <!-- Maven Central Deployment -->
+            <id>ossrh</id>
+            <username>${env.SONATYPE_USERNAME}</username>
+            <password>${env.SONATYPE_PASSWORD}</password>
         </server>
     </servers>
 </settings>
