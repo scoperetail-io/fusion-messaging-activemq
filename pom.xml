@@ -1,12 +1,15 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>com.scoperetail.fusion</groupId>
 	<artifactId>fusion-messaging-activemq</artifactId>
 	<version>0.4-SNAPSHOT</version>
 	<name>fusion-messaging-activemq</name>
 	<description>Generic Messaging implementation</description>
-
+	<url>https://github.com/scoperetail-io/fusion-messaging-activemq</url>
+	
 	<properties>
 		<java.version>11</java.version>
 		<maven.compiler.source>11</maven.compiler.source>
@@ -15,8 +18,8 @@
 		<lombok.version>1.18.12</lombok.version>
 		<spotless.version>2.10.0</spotless.version>
 		<springfox-version>3.0.0</springfox-version>
-		<sonar.projectKey>scoperetail-io_fusion-jms</sonar.projectKey> 
-        <sonar.organization>scoperetail-io</sonar.organization>
+		<sonar.projectKey>scoperetail-io_fusion-jms</sonar.projectKey>
+		<sonar.organization>scoperetail-io</sonar.organization>
 		<sonar.host.url>https://sonarcloud.io</sonar.host.url>
 		<license-maven-plugin.version>2.0.0</license-maven-plugin.version>
 		<sonar.exclusions>
@@ -28,17 +31,35 @@
 	</properties>
 
 	<scm>
-		<developerConnection>
-			scm:git:git@github.com:scoperetail-io/fusion-messaging-activemq.git
-		</developerConnection>
+		<connection>scm:git:git@github.com:scoperetail-io/fusion-messaging-activemq.git</connection>
 		<tag>HEAD</tag>
+		<url>https://github.com/scoperetail-io/fusion-messaging-activemq</url>
 	</scm>
+
+	<licenses>
+		<license>
+			<name>Apache License, Version 2.0</name>
+			<url>https://www.apache.org/licenses/LICENSE-2.0.txt</url>
+			<distribution>repo</distribution>
+		</license>
+	</licenses>
+
+	<developers>
+		<developer>
+			<id>Scoperetail</id>
+			<name>Scoperetail Development Team</name>
+			<roles>
+				<role>Project Lead</role>
+			</roles>
+		</developer>
+	</developers>
+
 
 	<dependencies>
 		<dependency>
 			<groupId>com.scoperetail.fusion</groupId>
 			<artifactId>fusion-messaging</artifactId>
-			<version>0.1</version>
+			<version>0.7</version>
 		</dependency>
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
