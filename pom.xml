@@ -3,7 +3,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>com.scoperetail.fusion</groupId>
 	<artifactId>fusion-messaging-activemq</artifactId>
-	<version>0.4</version>
+	<version>0.5-SNAPSHOT</version>
 	<name>fusion-messaging-activemq</name>
 	<description>Generic Messaging implementation</description>
 	<url>https://github.com/scoperetail-io/fusion-messaging-activemq</url>
@@ -30,7 +30,7 @@
 
 	<scm>
 		<connection>scm:git:git@github.com:scoperetail-io/fusion-messaging-activemq.git</connection>
-		<tag>fusion-messaging-activemq-0.4</tag>
+		<tag>HEAD</tag>
 		<url>https://github.com/scoperetail-io/fusion-messaging-activemq</url>
 	</scm>
 
