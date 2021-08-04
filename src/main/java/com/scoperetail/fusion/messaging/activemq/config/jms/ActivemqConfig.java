@@ -59,7 +59,7 @@ public class ActivemqConfig implements InitializingBean {
   private static final String CUSTOM_JMS_TEMPLATE = "_CUSTOM_JMS_TEMPLATE";
   private static final String CUSTOM_FACTORY = "_CUSTOM_FACTORY";
 
-  private FusionConfig fusion;
+  private FusionConfig fusionConfig;
   private ApplicationContext applicationContext;
   private MessageRouterSender messageRouter;
   private final Map<String, CachingConnectionFactory> connectionFactoryByBrokerIdMap =
@@ -78,7 +78,7 @@ public class ActivemqConfig implements InitializingBean {
 
   private void registerConnectionFactories(final BeanDefinitionRegistry registry)
       throws JMSException {
-    for (final Broker broker : fusion.getBrokers()) {
+    for (final Broker broker : fusionConfig.getBrokers()) {
       if (ACTIVEMQ.equals(broker.getJmsProvider())) {
         registerConnectionFactory(broker, registry);
       }
@@ -141,35 +141,30 @@ public class ActivemqConfig implements InitializingBean {
 
   private Set<String> getTargetBrokers() {
     final Set<String> uniqueBrokerIds = new HashSet<>();
-    fusion
+    fusionConfig
         .getUsecases()
         .forEach(
-            usecase -> {
-              final String activeConfig = usecase.getActiveConfig();
-              usecase
-                  .getConfigs()
-                  .stream()
-                  .filter(config -> activeConfig.equals(config.getName()))
-                  .findFirst()
-                  .ifPresent(
-                      config -> {
-                        final List<Adapter> adapters =
-                            config
-                                .getAdapters()
-                                .stream()
-                                .filter(
-                                    c ->
-                                        c.getAdapterType().equals(Adapter.AdapterType.OUTBOUND)
-                                            && c.getTrasnportType()
-                                                .equals(Adapter.TransportType.JMS))
-                                .collect(Collectors.toList());
-                        uniqueBrokerIds.addAll(
-                            adapters
-                                .stream()
-                                .map(Adapter::getBrokerId)
-                                .collect(Collectors.toSet()));
-                      });
-            });
+            usecase ->
+                fusionConfig
+                    .getActiveConfig(usecase.getName())
+                    .ifPresent(
+                        config -> {
+                          final List<Adapter> adapters =
+                              config
+                                  .getAdapters()
+                                  .stream()
+                                  .filter(
+                                      c ->
+                                          c.getAdapterType().equals(Adapter.AdapterType.OUTBOUND)
+                                              && c.getTrasnportType()
+                                                  .equals(Adapter.TransportType.JMS))
+                                  .collect(Collectors.toList());
+                          uniqueBrokerIds.addAll(
+                              adapters
+                                  .stream()
+                                  .map(Adapter::getBrokerId)
+                                  .collect(Collectors.toSet()));
+                        }));
     return uniqueBrokerIds;
   }
 
