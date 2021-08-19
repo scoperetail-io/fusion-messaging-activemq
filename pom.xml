@@ -16,8 +16,8 @@
 
 
 	<properties>
-		<fusion-messaging.version>0.12</fusion-messaging.version>
-		<fusion-config.version>0.2</fusion-config.version>
+		<fusion-messaging.version>0.13</fusion-messaging.version>
+		<fusion-config.version>0.3</fusion-config.version>
 	</properties>
 
 	<scm>
